@@ -1,2 +1,2 @@
 # Vectorgame
-Pygame Vectorgame with pygame's internal Vector library
+Python vectorGame programmed with pygame.
