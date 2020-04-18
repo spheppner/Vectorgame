@@ -1,9 +1,15 @@
-# -*- coding: utf-8 -*-
-
 import random
 import pygame 
 import operator
 import math
+import time
+
+"""
+author: Simon HEPPNER
+website: github.com/spheppner/vectorGame
+email: simon@heppner.at
+name of game: vectorGame
+"""
 
 class Vec2d(object):
     """2d vector class, supports vector and scalar operators,
@@ -430,18 +436,18 @@ class VectorSprite(pygame.sprite.Sprite):
         
            
 
-class Ball():
+class Line():
     
     group = []
     number = 0
     maxage = 400
     """this is not a native pygame sprite but instead a pygame surface"""
     def __init__(self, screen, startpoint=Vec2d(5,5), move=Vec2d(1,0), radius = 50, color=(0,0,255), bossnumber=0):
-        """create a (black) surface and paint a blue ball on it"""
-        self.number = Ball.number
-        Ball.number += 1
-        #Ball.group[self.number] = self
-        Ball.group.append(self)
+        """create a (black) surface and paint a blue Line on it"""
+        self.number = Line.number
+        Line.number += 1
+        #Line.group[self.number] = self
+        Line.group.append(self)
         self.radius = radius
         self.color = color
         self.bossnumber = bossnumber # 
@@ -449,10 +455,10 @@ class Ball():
         self.startpoint = Vec2d(startpoint.x, startpoint.y) # make a copy of the startpoint vector
         self.move = move
         self.age = 0
-        # create a rectangular surface for the ball 100x100
+        # create a rectangular surface for the Line 100x100
         self.surface = pygame.Surface((2*self.radius,2*self.radius))    
         # pygame.draw.circle(Surface, color, pos, radius, width=0) # from pygame documentation
-        #pygame.draw.circle(self.surface, color, (radius, radius), radius) # draw blue filled circle on ball surface
+        #pygame.draw.circle(self.surface, color, (radius, radius), radius) # draw blue filled circle on Line surface
         width = 1
         pygame.draw.line(self.surface, self.color, (50,50),
                     (50+self.move.x * 10, 50+self.move.y*10),width)
@@ -462,7 +468,7 @@ class Ball():
         self.surface = self.surface.convert_alpha() # for faster blitting. 
         
     #def blit(self, background):
-        #"""blit the Ball on the background"""
+        #"""blit the Line on the background"""
         #background.blit(self.surface, ( self.x, self.y))
         
     def draw(self):
@@ -499,22 +505,16 @@ class PygView(object):
         self.font = pygame.font.SysFont('mono', 24, bold=True)
         self.text_rectangle = ""
         self.canwin = True
-        self.hpp1 = False
-        self.hpp2 = False
-        self.hpp3 = False
-        self.hpp4 = False
-        self.hpp5 = False
-        self.hpp6 = False
-        self.hpp7 = False
-        self.hpp8 = False
-        self.hpp9 = False
         self.visual_mode = visualmode
+        if self.visual_mode == True:
+            self.canwin = False
         self.green = (0, 255, 0)
         self.yellow = (255, 255, 0)
         self.red = (255, 0, 0)
         self.purple = (255, 0, 255)
         self.light_blue = (0, 255, 255)
         self.blue = (0, 0, 255)
+        
         with open("data/plane_file.txt", "r") as self.plane_file:
             self.active_plane = random.choice(self.plane_file.read().split(","))
         with open("data/colour_file.txt", "r") as self.colour_file:
@@ -528,128 +528,48 @@ class PygView(object):
         """painting ships on the surface"""
         
         # --- Player1 Planes ---
-        
-        if "standard" in self.active_plane:
-            self.player1 = Shape(self.screen, Vec2d(100, 80),
-                                           (
-                                            Vec2d(0, 0),
-                                            Vec2d(-25, 25),
-                                            Vec2d(25, 0),
-                                            Vec2d(-25, -25),
-                                            Vec2d(0, 0)))
+        standard = (Vec2d(0, 0), Vec2d(-25, 25), Vec2d(25, 0), Vec2d(-25, -25), Vec2d(0, 0))
+        rectangle = (Vec2d(-25, -25), Vec2d(25, -25), Vec2d(25, -10), Vec2d(0, 0), Vec2d(25, 10), Vec2d(25, 25), Vec2d(-25, 25), Vec2d(-25, -25))
+        diamond = (Vec2d(-5, -15), Vec2d(-5, 15), Vec2d(0, 25), Vec2d(25, 0), Vec2d(0, -25), Vec2d(-5, -15))
+        space_shuttle = (Vec2d(-25, -25), Vec2d(-25, 25), Vec2d(25, 10), Vec2d(25, -10), Vec2d(-25, -25))
+        dagger = (Vec2d(-25, -5), Vec2d(-25, 5), Vec2d(-5, 5), Vec2d(0, 15), Vec2d(5, 5), Vec2d(25, 0), Vec2d(5, -5), Vec2d(0, -15), Vec2d(-5, -5), Vec2d(-25, -5))
+        rocket = (Vec2d(-25, -5), Vec2d(-25, 5), Vec2d(-15, 5), Vec2d(-15, 15), Vec2d(-5, 15), Vec2d(5, 5), Vec2d(15, 5), Vec2d(25, 0), Vec2d(15, -5), Vec2d(5, -5), Vec2d(-5, -15), Vec2d(-15, -15), Vec2d(-15, -5), Vec2d(-25, -5))
+        standard2 = (Vec2d(0, 0), Vec2d(-25, 25), Vec2d(75, 0), Vec2d(-25, -25), Vec2d(0, 0))
+        pacman = (Vec2d(-25, -15), Vec2d(-25, 15), Vec2d(-15, 25), Vec2d(15, 25), Vec2d(25, 15), Vec2d(25, 10), Vec2d(5, 0), Vec2d(25, -10), Vec2d(25, -15), Vec2d(15, -25), Vec2d(-15, -25), Vec2d(-25, -15))
+        arrow = (Vec2d(5, -5), Vec2d(-25, -5), Vec2d(-5, 0), Vec2d(-25, 5), Vec2d(5, 5), Vec2d(25, 0), Vec2d(5, -5))
+        if "standard" == self.active_plane:
+            self.player1 = Shape(self.screen, Vec2d(100, 80), standard)
             self.player1.draw()
-
-        elif "rectangle" in self.active_plane:
-            self.rectangle_plane = Shape(self.screen, Vec2d(100, 80), 
-                                                  (
-                                                   Vec2d(-25, -25), 
-                                                   Vec2d(25, -25), 
-                                                   Vec2d(25, -10), 
-                                                   Vec2d(0, 0),
-                                                   Vec2d(25, 10),
-                                                   Vec2d(25, 25),
-                                                   Vec2d(-25, 25),
-                                                   Vec2d(-25, -25)))
-            self.rectangle_plane.draw()
-        
-        elif "diamond" in self.active_plane:
-            self.diamond_plane = Shape(self.screen, Vec2d(100, 80), 
-                                                  (
-                                                   Vec2d(-5, -15), 
-                                                   Vec2d(-5, 15), 
-                                                   Vec2d(0, 25), 
-                                                   Vec2d(25, 0),
-                                                   Vec2d(0, -25),
-                                                   Vec2d(-5, -15)))
-            self.diamond_plane.draw()
+        elif "rectangle" == self.active_plane:
+            self.player1 = Shape(self.screen, Vec2d(100, 80), rectangle)
+            self.player1.draw()
+        elif "diamond" == self.active_plane:
+            self.player1 = Shape(self.screen, Vec2d(100, 80), diamond)
+            self.player1.draw()
+        elif "space_shuttle" == self.active_plane:
+            self.player1 = Shape(self.screen, Vec2d(100, 80), space_shuttle)
+            self.player1.draw()
+        elif "dagger" == self.active_plane:
+            self.player1 = Shape(self.screen, Vec2d(100, 80), dagger)
+            self.player1.draw()
+        elif "rocket" == self.active_plane:
+            self.player1 = Shape(self.screen, Vec2d(100, 80), rocket)
+            self.player1.draw()
             
-        elif "space_shuttle" in self.active_plane:
-            self.space_shuttle_plane = Shape(self.screen, Vec2d(100, 80), 
-                                                  (
-                                                   Vec2d(-25, -25), 
-                                                   Vec2d(-25, 25), 
-                                                   Vec2d(25, 10), 
-                                                   Vec2d(25, -10),
-                                                   Vec2d(-25, -25)))
-            self.space_shuttle_plane.draw()
-        
-        elif "dagger" in self.active_plane:
-            self.dagger_plane = Shape(self.screen, Vec2d(100, 80), 
-                                                  (
-                                                   Vec2d(-25, -5), 
-                                                   Vec2d(-25, 5), 
-                                                   Vec2d(-5, 5), 
-                                                   Vec2d(0, 15),
-                                                   Vec2d(5, 5),
-                                                   Vec2d(25, 0),
-                                                   Vec2d(5, -5),
-                                                   Vec2d(0, -15),
-                                                   Vec2d(-5, -5),
-                                                   Vec2d(-25, -5)))
-            self.dagger_plane.draw()
-            
-        elif "rocket" in self.active_plane:
-            self.rocket_plane = Shape(self.screen, Vec2d(100, 80), 
-                                                  (
-                                                   Vec2d(-25, -5), 
-                                                   Vec2d(-25, 5), 
-                                                   Vec2d(-15, 5), 
-                                                   Vec2d(-15, 15),
-                                                   Vec2d(-5, 15),
-                                                   Vec2d(5, 5),
-                                                   Vec2d(15, 5),
-                                                   Vec2d(25, 0),
-                                                   Vec2d(15, -5),
-                                                   Vec2d(5, -5),
-                                                   Vec2d(-5, -15),
-                                                   Vec2d(-15, -15),
-                                                   Vec2d(-15, -5),
-                                                   Vec2d(-25, -5)))
-            self.rocket_plane.draw()
-        
         # --- Player2 Planes ---
         
-        if "standard" in self.active_plane2:
-            self.player2 = Shape(self.screen, Vec2d(self.width-100, self.height-100),
-                                           (
-                                            Vec2d(0, 0),
-                                            Vec2d(-25, 25),
-                                            Vec2d(75, 0),
-                                            Vec2d(-25, -25),
-                                            Vec2d(0, 0)))
+        if "standard" == self.active_plane2:
+            self.player2 = Shape(self.screen, Vec2d(self.width-100, self.height-100), standard2)
             self.player2.rotate(180)
             self.player2.draw()
-        
-        elif "pacman" in self.active_plane2:
-            self.pacman_plane = Shape(self.screen, Vec2d(self.width-100, self.height-100), 
-                                                  (
-                                                   Vec2d(-25, -15), 
-                                                   Vec2d(-25, 15), 
-                                                   Vec2d(-15, 25), 
-                                                   Vec2d(15, 25),
-                                                   Vec2d(25, 15),
-                                                   Vec2d(25, 10),
-                                                   Vec2d(5, 0),
-                                                   Vec2d(25, -10),
-                                                   Vec2d(25, -15),
-                                                   Vec2d(15, -25),
-                                                   Vec2d(-15, -25),
-                                                   Vec2d(-25, -15)))
-            self.pacman_plane.rotate(180)
-            self.pacman_plane.draw()
-        
-        elif "arrow" in self.active_plane2:
-            self.arrow_plane = Shape(self.screen, Vec2d(self.width-100, self.height-100), 
-                                                  (
-                                                   Vec2d(5, -5), 
-                                                   Vec2d(-25, -5), 
-                                                   Vec2d(-5, 0), 
-                                                   Vec2d(-25, 5),
-                                                   Vec2d(5, 5),
-                                                   Vec2d(25, 0),
-                                                   Vec2d(5, -5)))
-            self.arrow_plane.rotate(180)
-            self.arrow_plane.draw()
+        elif "pacman" == self.active_plane2:
+            self.player2 = Shape(self.screen, Vec2d(self.width-100, self.height-100), pacman)
+            self.player2.rotate(180)
+            self.player2.draw()
+        elif "arrow" == self.active_plane2:
+            self.player2 = Shape(self.screen, Vec2d(self.width-100, self.height-100), arrow)
+            self.player2.rotate(180)
+            self.player2.draw()                               
          
     def run(self):
         """The mainloop
@@ -663,36 +583,14 @@ class PygView(object):
             seconds = milliseconds / 1000.0
             self.playtime += seconds
             if self.visual_mode is False:
-                if "standard" in self.active_plane:
-                    text_player1 = "Player1: HP: {}".format(self.player1.hitpoints)
-                    self.draw_text(text_player1, x=50, y=30, color=(200,20,0))
-                elif "rectangle" in self.active_plane:
-                    self.text_rectangle = "Player1: HP: {}".format(self.rectangle_plane.hitpoints)
-                    self.draw_text(self.text_rectangle, x=50, y=30, color=(200,20,0))
-                elif "diamond" in self.active_plane:
-                    self.text_diamond = "Player1: HP: {}".format(self.diamond_plane.hitpoints)
-                    self.draw_text(self.text_diamond, x=50, y=30, color=(200,20,0))
-                elif "space_shuttle" in self.active_plane:
-                    self.text_space_shuttle = "Player1: HP: {}".format(self.space_shuttle_plane.hitpoints)
-                    self.draw_text(self.text_space_shuttle, x=50, y=30, color=(200,20,0))
-                elif "dagger" in self.active_plane:
-                    self.text_dagger = "Player1: HP: {}".format(self.dagger_plane.hitpoints)
-                    self.draw_text(self.text_dagger, x=50, y=30, color=(200,20,0))
-                elif "rocket" in self.active_plane:
-                    self.text_rocket = "Player1: HP: {}".format(self.rocket_plane.hitpoints)
-                    self.draw_text(self.text_rocket, x=50, y=30, color=(200,20,0))
-                    
-                if "standard" in self.active_plane2:
-                    text_player2 = "Player2: HP: {}".format(self.player2.hitpoints)
-                    self.draw_text(text_player2, x=self.width-300, y=30, color=(0,20,200))
-                elif "pacman" in self.active_plane2:
-                    text_pacman = "Player2: HP: {}".format(self.pacman_plane.hitpoints)
-                    self.draw_text(text_pacman, x=self.width-300, y=30, color=(0,20,200))
-                elif "arrow" in self.active_plane2:
-                    text_arrow = "Player2: HP: {}".format(self.arrow_plane.hitpoints)
-                    self.draw_text(text_arrow, x=self.width-300, y=30, color=(0,20,200))
-            text_time = "FPS: {:4.3}".format(self.clock.get_fps(), self.playtime)
-            self.draw_text(text_time, x = self.width//2-200, y=30, color=(100,0,100))
+                text_player1 = "Player1: HP: {}".format(self.player1.hitpoints)
+                self.write(text_player1, x=50, y=30, color=(200,20,0))
+      
+                text_player2 = "Player2: HP: {}".format(self.player2.hitpoints)
+                self.write(text_player2, x=self.width-300, y=30, color=(0,20,200))
+                
+            text_time = "FPS: {:4.3}".format(self.clock.get_fps())
+            self.write(text_time, x = self.width//2, y=30, color=(100,0,100), center=True)
             
             
             # ---- joystick handler ------
@@ -704,113 +602,32 @@ class PygView(object):
                     y2 = j.get_axis(3)
                     buttons = j.get_numbuttons()
                     for b in range(buttons):
-                        pushed = j.get_button( b )
-                        if pushed and b == 0:                # button 0: X, button 1: A, button 2: B, button 3: Y
-                            print("button 0 was pressed.")
-                        elif pushed and b == 1:
-                            print("button 1 was pressed.")
-                            if "standard" in self.active_plane:
-                                if "green" in self.active_colour:
-                                    move = c * -speedfactor # + self.player1.move
-                                    Ball(self.screen, self.player1.startpoint-c, move, color=self.green, bossnumber=self.player1.number)
-                                if "yellow" in self.active_colour:
-                                    move = c * -speedfactor # + self.player1.move
-                                    Ball(self.screen, self.player1.startpoint-c, move, color=self.yellow, bossnumber=self.player1.number)
-                                if "red" in self.active_colour:
-                                    move = c * -speedfactor # + self.player1.move
-                                    Ball(self.screen, self.player1.startpoint-c, move, color=self.red, bossnumber=self.player1.number)
-                            elif "rectangle" in self.active_plane:
-                                if "green" in self.active_colour:
-                                    move = c * -speedfactor # + self.player1.move
-                                    Ball(self.screen, self.rectangle_plane.startpoint-c, move, color=self.green, bossnumber=self.rectangle_plane.number)                      
-                                if "yellow" in self.active_colour:
-                                    move = c * -speedfactor # + self.player1.move
-                                    Ball(self.screen, self.rectangle_plane.startpoint-c, move, color=self.yellow, bossnumber=self.rectangle_plane.number)                      
-                                if "red" in self.active_colour:    
-                                    move = c * -speedfactor # + self.p
-                                    move = c * -speedfactor # + self.player1.move
-                                    Ball(self.screen, self.diamond_plane.startpoint-c, move, color=self.green, bossnumber=self.diamond_plane.number)                      
-                                if "yellow" in self.active_colour:
-                                    move = c * -speedfactor # + self.player1.move
-                                    Ball(self.screen, self.diamond_plane.startpoint-c, move, color=self.yellow, bossnumber=self.diamond_plane.number)                      
-                                if "red" in self.active_colour:
-                                    move = c * -speedfactor # + self.player1.move
-                                    Ball(self.screen, self.diamond_plane.startpoint-c, move, color=self.red, bossnumber=self.diamond_plane.number)                      
-                            elif "space_shuttle" in self.active_plane:
-                                if "green" in self.active_colour:
-                                    move = c * -speedfactor # + self.player1.move
-                                    Ball(self.screen, self.space_shuttle_plane.startpoint-c, move, color=self.green, bossnumber=self.space_shuttle_plane.number)                      
-                                if "yellow" in self.active_colour:
-                                    move = c * -speedfactor # + self.player1.move
-                                    Ball(self.screen, self.space_shuttle_plane.startpoint-c, move, color=self.yellow, bossnumber=self.space_shuttle_plane.number)                      
-                                if "red" in self.active_colour:
-                                    move = c * -speedfactor # + self.player1.move
-                                    Ball(self.screen, self.space_shuttle_plane.startpoint-c, move, color=self.red, bossnumber=self.space_shuttle_plane.number)                      
-                            elif "dagger" in self.active_plane:
-                                if "green" in self.active_colour:
-                                    move = c * -speedfactor # + self.player1.move
-                                    Ball(self.screen, self.rocket_plane.startpoint-c, move, color=self.green, bossnumber=self.rocket_plane.number)                      
-                                if "yellow" in self.active_colour:
-                                    move = c * -speedfactor # + self.player1.move
-                                    Ball(self.screen, self.rocket_plane.startpoint-c, move, color=self.yellow, bossnumber=self.rocket_plane.number)                      
-                                if "red" in self.active_colour:
-                                    move = c * -speedfactor # + self.player1.move
-                                    Ball(self.screen, self.rocket_plane.startpoint-c, move, color=self.red, bossnumber=self.rocket_plane.number)                      
-
+                       pushed = j.get_button( b )
+                       if pushed and b == 0:                # button 0: X, button 1: A, button 2: B, button 3: Y
+                           print("button 0 was pressed.")
+                       elif pushed and b == 1:
+                           print("button 1 was pressed.")
+                           if "green" in self.active_colour:
+                               move = c * -speedfactor # + self.player1.move
+                               Line(self.screen, self.player1.startpoint-c, move, color=self.green, bossnumber=self.player1.number)
+                           if "yellow" in self.active_colour:
+                               move = c * -speedfactor # + self.player1.move
+                               Line(self.screen, self.player1.startpoint-c, move, color=self.yellow, bossnumber=self.player1.number)
+                           if "red" in self.active_colour:
+                               move = c * -speedfactor # + self.player1.move
+                               Line(self.screen, self.player1.startpoint-c, move, color=self.red, bossnumber=self.player1.number)
                     if x < -0.3:
-                        if "standard" in self.active_plane:
-                            self.player1.rotate(-5 * -x * 1.5)
-                        elif "rectangle" in self.active_plane:
-                            self.rectangle_plane.rotate(-5 * -x * 1.5)
-                        elif "diamond" in self.active_plane:
-                            self.diamond_plane.rotate(-5 * -x * 1.5)
-                        elif "space_shuttle" in self.active_plane:
-                            self.space_shuttle_plane.rotate(-5 * -x * 1.5)
-                        elif "dagger" in self.active_plane:
-                            self.dagger_plane.rotate(-5 * -x * 1.5)
-                        elif "rocket" in self.active_plane:
-                            self.rocket_plane.rotate(-5 * -x * 1.5)
+                        self.player1.rotate(-5 * -x * 1.5)
+
                     if x > 0.3:
-                        if "standard" in self.active_plane:
-                            self.player1.rotate(5 * x * 1.5)
-                        elif "rectangle" in self.active_plane:
-                            self.rectangle_plane.rotate(5 * x * 1.5)
-                        elif "diamond" in self.active_plane:
-                            self.diamond_plane.rotate(5 * x * 1.5)
-                        elif "space_shuttle" in self.active_plane:
-                            self.space_shuttle_plane.rotate(5 * x * 1.5)
-                        elif "dagger" in self.active_plane:
-                            self.dagger_plane.rotate(5 * x * 1.5)
-                        elif "rocket" in self.active_plane:
-                            self.rocket_plane.rotate(5 * x * 1.5)
+                        self.player1.rotate(5 * x * 1.5)
+                            
                     if y < -0.1:
-                        if "standard" in self.active_plane:
-                            self.player1.forward(150)
-                        elif "rectangle" in self.active_plane:
-                            self.rectangle_plane.forward(150)
-                        elif "diamond" in self.active_plane:
-                            self.diamond_plane.forward(150)
-                        elif "space_shuttle" in self.active_plane:
-                            self.space_shuttle_plane.forward(150)
-                        elif "dagger" in self.active_plane:
-                            self.dagger_plane.forward(150)
-                        elif "rocket" in self.active_plane:
-                            self.rocket_plane.forward(150)
+                        self.player1.forward(150)
+
                     if y > 0.3:
-                        if "standard" in self.active_plane:
-                            self.player1.forward(-75)
-                        elif "rectangle" in self.active_plane:
-                            self.rectangle_plane.forward(-75)
-                        elif "diamond" in self.active_plane:
-                            self.diamond_plane.forward(-75)
-                        elif "space_shuttle" in self.active_plane:
-                            self.space_shuttle_plane.forward(-75)
-                        elif "dagger" in self.active_plane:
-                            self.dagger_plane.forward(-75)
-                        elif "rocket" in self.active_plane:
-                            self.rocket_plane.forward(-75)
-                    #self.snowman1.dx = seconds * self.snowman1.speed * x
-                    #self.snowman1.dy = seconds * self.snowman1.speed * y
+                        self.player1.forward(-75)
+
                 if number == 1:
                     x = j.get_axis(0)
                     y = j.get_axis(1)
@@ -818,64 +635,26 @@ class PygView(object):
                     for b in range(buttons):
                         pushed = j.get_button( b )
                         if pushed and b == 1:
-                            if "standard" in self.active_plane2:  
-                                if "purple" in self.active_colour2:                                           
-                                    move = d * -speedfactor 
-                                    Ball(self.screen, self.player2.startpoint-d,  move, color=self.purple, bossnumber=self.player2.number)  
-                                elif "light_blue" in self.active_colour2:
-                                    move = d * -speedfactor 
-                                    Ball(self.screen, self.player2.startpoint-d,  move, color=self.light_blue, bossnumber=self.player2.number)  
-                                elif "blue" in self.active_colour2:
-                                    move = d * -speedfactor 
-                                    Ball(self.screen, self.player2.startpoint-d,  move, color=self.blue, bossnumber=self.player2.number)  
-                            elif "pacman" in self.active_plane2:
-                                if "purple" in self.active_colour2:
-                                    move = d * -speedfactor 
-                                    Ball(self.screen, self.pacman_plane.startpoint-d,  move, color=self.purple, bossnumber=self.pacman_plane.number)   
-                                elif "light_blue" in self.active_colour2:
-                                    move = d * -speedfactor 
-                                    Ball(self.screen, self.pacman_plane.startpoint-d,  move, color=self.light_blue, bossnumber=self.pacman_plane.number)
-                                elif "blue" in self.active_colour2:
-                                    move = d * -speedfactor 
-                                    Ball(self.screen, self.pacman_plane.startpoint-d,  move, color=self.blue, bossnumber=self.pacman_plane.number)
-                            elif "arrow" in self.active_plane2:
-                                if "purple" in self.active_colour2:
-                                    move = d * -speedfactor 
-                                    Ball(self.screen, self.arrow_plane.startpoint-d,  move, color=self.purple, bossnumber=self.arrow_plane.number)   
-                                elif "light_blue" in self.active_colour2:
-                                    move = d * -speedfactor 
-                                    Ball(self.screen, self.arrow_plane.startpoint-d,  move, color=self.light_blue, bossnumber=self.arrow_plane.number)
-                                elif "blue" in self.active_colour2:
-                                    move = d * -speedfactor 
-                                    Ball(self.screen, self.arrow_plane.startpoint-d,  move, color=self.blue, bossnumber=self.arrow_plane.number)
+                            if "purple" in self.active_colour2:                                           
+                                move = d * -speedfactor 
+                                Line(self.screen, self.player2.startpoint-d,  move, color=self.purple, bossnumber=self.player2.number)  
+                            elif "light_blue" in self.active_colour2:
+                                move = d * -speedfactor 
+                                Line(self.screen, self.player2.startpoint-d,  move, color=self.light_blue, bossnumber=self.player2.number)  
+                            elif "blue" in self.active_colour2:
+                                move = d * -speedfactor 
+                                Line(self.screen, self.player2.startpoint-d,  move, color=self.blue, bossnumber=self.player2.number)  
                     if x < -0.3:
-                        if "standard" in self.active_plane2:
-                            self.player2.rotate(-5 * -x * 1.5)
-                        if "pacman" in self.active_plane2:
-                            self.pacman_plane.rotate(-5 * -x * 1.5)
-                        if "arrow" in self.active_plane2:
-                            self.arrow_plane.rotate(-5 * -x * 1.5)
+                        self.player2.rotate(-5 * -x * 1.5)
+                        
                     if x > 0.3:
-                        if "standard" in self.active_plane2:
-                            self.player2.rotate(5 * x * 1.5)
-                        if "pacman" in self.active_plane2:
-                            self.pacman_plane.rotate(5 * x * 1.5)
-                        if "arrow" in self.active_plane2:
-                            self.arrow_plane.rotate(5 * x * 1.5)
+                        self.player2.rotate(5 * x * 1.5)
+                            
                     if y < -0.3:
-                        if "standard" in self.active_plane2:
-                            self.player2.forward(150)
-                        elif "pacman" in self.active_plane2:
-                            self.pacman_plane.forward(150)
-                        elif "arrow" in self.active_plane2:
-                            self.arrow_plane.forward(150)
+                        self.player2.forward(150)
+                            
                     if y > 0.3:
-                        if "standard" in self.active_plane2:
-                            self.player2.forward(-50)
-                        if "pacman" in self.active_plane2:
-                            self.pacman_plane.forward(-50)
-                        if "arrow" in self.active_plane2:
-                            self.arrow_plane.forward(-50)
+                        self.player2.forward(-50)
             
             # ------------ event handler: keys pressed and released -----
             for event in pygame.event.get():
@@ -888,779 +667,172 @@ class PygView(object):
                         self.fullscreen = True
             # --------- pressed key handler --------------            
             pressed = pygame.key.get_pressed()            
-            #self.player1.move = Vec2d(0,0)
             if pressed[pygame.K_w]:
-                if "standard" in self.active_plane:
-                    self.player1.forward(150)
-                elif "rectangle" in self.active_plane:
-                    self.rectangle_plane.forward(150)
-                elif "diamond" in self.active_plane:
-                    self.diamond_plane.forward(150)
-                elif "space_shuttle" in self.active_plane:
-                    self.space_shuttle_plane.forward(150)
-                elif "dagger" in self.active_plane:
-                    self.dagger_plane.forward(150)
-                elif "rocket" in self.active_plane:
-                    self.rocket_plane.forward(150)
+                self.player1.forward(150)
             if pressed[pygame.K_s]:
-                if "standard" in self.active_plane:
-                    self.player1.forward(-50)
-                elif "rectangle" in self.active_plane:
-                    self.rectangle_plane.forward(-50)
-                elif "diamond" in self.active_plane:
-                    self.diamond_plane.forward(-50)
-                elif "space_shuttle" in self.active_plane:
-                    self.space_shuttle_plane.forward(-50)
-                elif "dagger" in self.active_plane:
-                    self.dagger_plane.forward(-50)
-                elif "rocket" in self.active_plane:
-                    self.rocket_plane.forward(-50)
+                self.player1.forward(-50)
             if pressed[pygame.K_a]:
-                if "standard" in self.active_plane:
-                    self.player1.rotate(-5)
-                elif "rectangle" in self.active_plane:
-                    self.rectangle_plane.rotate(-5)
-                elif "diamond" in self.active_plane:
-                    self.diamond_plane.rotate(-5)
-                elif "space_shuttle" in self.active_plane:
-                    self.space_shuttle_plane.rotate(-5)
-                elif "dagger" in self.active_plane:
-                    self.dagger_plane.rotate(-5)
-                elif "rocket" in self.active_plane:
-                    self.rocket_plane.rotate(-5)
+                self.player1.rotate(-5)
             if pressed[pygame.K_d]:
-                if "standard" in self.active_plane:
-                    self.player1.rotate(5)
-                elif "rectangle" in self.active_plane:
-                    self.rectangle_plane.rotate(5)
-                elif "diamond" in self.active_plane:
-                    self.diamond_plane.rotate(5)
-                elif "space_shuttle" in self.active_plane:
-                    self.space_shuttle_plane.rotate(5)
-                elif "dagger" in self.active_plane:
-                    self.dagger_plane.rotate(5)
-                elif "rocket" in self.active_plane:
-                    self.rocket_plane.rotate(5)
-           
-                
-            #if pressed[pygame.K_t]:
-            #    self.player1.zoom += 0.25
-            #if pressed[pygame.K_f]:
-            #    self.player1.zoom -= 0.25
-            #-------- player2 ---------
-            #self.player2.move = Vec2d(0,0)
+                self.player1.rotate(5)
+               
             if pressed[pygame.K_UP]:
-                if "standard" in self.active_plane2:
-                    self.player2.forward(150)
-                elif "pacman" in self.active_plane2:
-                    self.pacman_plane.forward(150)
-                elif "arrow" in self.active_plane2:
-                    self.arrow_plane.forward(150)
+                self.player2.forward(150)
             if pressed[pygame.K_DOWN]:
-                if "standard" in self.active_plane2:
-                    self.player2.forward(-50)
-                if "pacman" in self.active_plane2:
-                    self.pacman_plane.forward(-50)
-                if "arrow" in self.active_plane2:
-                    self.arrow_plane.forward(-50)
+                self.player2.forward(-50)
             if pressed[pygame.K_LEFT]:
-                if "standard" in self.active_plane2:
-                    self.player2.rotate(-5)
-                if "pacman" in self.active_plane2:
-                    self.pacman_plane.rotate(-5)
-                if "arrow" in self.active_plane2:
-                    self.arrow_plane.rotate(-5)
+                self.player2.rotate(-5)
             if pressed[pygame.K_RIGHT]:
-                if "standard" in self.active_plane2:
-                    self.player2.rotate(5)
-                if "pacman" in self.active_plane2:
-                    self.pacman_plane.rotate(5)
-                if "arrow" in self.active_plane2:
-                    self.arrow_plane.rotate(5)
-            
-            #if pressed[pygame.K_PLUS]:
-            #    self.player2.zoom += 0.25
-            #if pressed[pygame.K_MINUS]:
-            #    self.player2.zoom -= 0.25
-            # ----------update ships ------
+                self.player2.rotate(5)
             
             # --- Player1 Update() ---
             
-            if "standard" in self.active_plane:
-                self.player1.update(seconds)
-            elif "rectangle" in self.active_plane:
-                self.rectangle_plane.update(seconds)
-            elif "diamond" in self.active_plane:
-                self.diamond_plane.update(seconds)
-            elif "space_shuttle" in self.active_plane:
-                self.space_shuttle_plane.update(seconds)
-            elif "dagger" in self.active_plane:
-                self.dagger_plane.update(seconds)
-            elif "rocket" in self.active_plane:
-                self.rocket_plane.update(seconds)
+            self.player1.update(seconds)
             
             # --- Player2 Update() ---
             
-            if "standard" in self.active_plane2:
-                self.player2.update(seconds)
-            elif "pacman" in self.active_plane2:
-                self.pacman_plane.update(seconds)
-            elif "arrow" in self.active_plane2:
-                self.arrow_plane.update(seconds)
+            self.player2.update(seconds)
             
             # ----------draw ships ----------------
             
             # --- Player1 Draw() ---
             
-            if "standard" in self.active_plane:
-                self.player1.draw()
-            elif "rectangle" in self.active_plane:
-                self.rectangle_plane.draw()
-            elif "diamond" in self.active_plane:
-                self.diamond_plane.draw()
-            elif "space_shuttle" in self.active_plane:
-                self.space_shuttle_plane.draw()
-            elif "dagger" in self.active_plane:
-                self.dagger_plane.draw()
-            elif "rocket" in self.active_plane:
-                self.rocket_plane.draw()
+            self.player1.draw()
                 
             # --- Player 2 Draw() ---
             
-            if "standard" in self.active_plane2:
-                self.player2.draw()
-            elif "pacman" in self.active_plane2:
-                self.pacman_plane.draw() 
-            elif "arrow" in self.active_plane2:
-                self.arrow_plane.draw()
+            self.player2.draw()
             
-            # -----draw balls-----
-            for b in Ball.group:
+            # -----draw Lines-----
+            for b in Line.group:
                 b.draw()
-            # ---- delete old balls ----
+            # ---- delete old Lines ----
             
-            Ball.group = [b for b in Ball.group if b.age < Ball.maxage]
+            Line.group = [b for b in Line.group if b.age < Line.maxage]
             
             # ----- game over detection -----
             
             # --- Player1 ---
             if self.visual_mode is False:
-                if "standard" in self.active_plane:
-                    if self.player1.hitpoints <= 0:
-                        self.hpp1 = True
-                        if self.canwin is not False:
-                            text_gameover = "Player2 has won the game!"
-                            self.draw_text(text_gameover, x=370, y=425, color=(0,20,200), size=50)
-                            self.canwin = False
-                            return 100
-                            
-                elif "rectangle" in self.active_plane:
-                    if self.rectangle_plane.hitpoints <= 0:
-                        self.hpp3 = True
-                        if self.canwin is not False:
-                            text_gameover = "Player2 has won the game!"
-                            self.draw_text(text_gameover, x=370, y=425, color=(0,20,200), size=50)
-                            self.canwin = False
-                            return 100
-                
-                elif "diamond" in self.active_plane:
-                    if self.diamond_plane.hitpoints <= 0:
-                        self.hpp4 = True
-                        if self.canwin is not False:
-                            text_gameover = "Player2 has won the game!"
-                            self.draw_text(text_gameover, x=370, y=425, color=(0,20,200), size=50)
-                            self.canwin = False
-                            return 100
-                
-                elif "space_shuttle" in self.active_plane:
-                    if self.space_shuttle_plane.hitpoints <= 0:
-                        self.hpp5 = True
-                        if self.canwin is not False:
-                            text_gameover = "Player2 has won the game!"
-                            self.draw_text(text_gameover, x=370, y=425, color=(0,20,200), size=50)
-                            self.canwin = False
-                            return 100
-                
-                elif "dagger" in self.active_plane:
-                    if self.dagger_plane.hitpoints <= 0:
-                        self.hpp6 = True
-                        if self.canwin is not False:
-                            text_gameover = "Player2 has won the game!"
-                            self.draw_text(text_gameover, x=370, y=425, color=(0,20,200), size=50)
-                            self.canwin = False
-                            return 100
-                            
-                elif "rocket" in self.active_plane:
-                    if self.rocket_plane.hitpoints <= 0:
-                        self.hpp7 = True
-                        if self.canwin is not False:
-                            text_gameover = "Player2 has won the game!"
-                            self.draw_text(text_gameover, x=370, y=425, color=(0,20,200), size=50)
-                            self.canwin = False
-                            return 100
+                if self.player1.hitpoints <= 0:
+                    text_gameover = "Player2 has won the game!"
+                    self.write(text_gameover, x=self.width//2, y=self.height//2, color=(0,20,200), size=50, center=True)
+                    time.sleep(5)
+                    return 100
                 
                 # --- Player2 ---
                 
-                if "standard" in self.active_plane2:
-                    if self.player2.hitpoints <= 0:
-                        self.hpp2 = True
-                        if self.canwin is not False:
-                            text_gameover = "Player1 has won the game!"
-                            self.draw_text(text_gameover, x=370, y=425, color=(200,20,0), size=50)
-                            self.can_win = False
-                            return 100
-                elif "pacman" in self.active_plane2:
-                    if self.pacman_plane.hitpoints <= 0:
-                        self.hpp8 = True
-                        if self.canwin is not False:
-                            text_gameover = "Player1 has won the game!"
-                            self.draw_text(text_gameover, x=370, y=425, color=(200,20,0), size=50)
-                            self.can_win = False
-                            return 100
-                elif "arrow" in self.active_plane2:
-                    if self.arrow_plane.hitpoints <= 0:
-                        self.hpp9 = True
-                        if self.canwin is not False:
-                            text_gameover = "Player1 has won the game!"
-                            self.draw_text(text_gameover, x=370, y=425, color=(200,20,0), size=50)
-                            self.can_win = False
-                            return 100
-                
+                if self.player2.hitpoints <= 0:
+                    text_gameover = "Player1 has won the game!"
+                    self.write(text_gameover, x=370, y=425, color=(200,20,0), size=50)
+                    time.sleep(5)
+                    return 100
+                        
                 # ----- collision detection -----
-                critical_distance = 20
-                for b in Ball.group:
+                critical_distance = 60
+                for b in Line.group:
                     
                     # --- Player1 ---
                     
-                    if "standard" in self.active_plane:
-                        if b.bossnumber != self.player1.number:
-                            if (b.startpoint - self.player1.startpoint).get_length() < critical_distance:
-                                if self.hpp1 is False:
-                                    self.player1.hitpoints -= 1
-                    elif "rectangle" in self.active_plane:
-                        if b.bossnumber != self.rectangle_plane.number:
-                            if (b.startpoint - self.rectangle_plane.startpoint).get_length() < critical_distance:
-                                if self.hpp3 is False:
-                                    self.rectangle_plane.hitpoints -= 1
-                    elif "diamond" in self.active_plane:
-                        if b.bossnumber != self.diamond_plane.number:
-                            if (b.startpoint - self.diamond_plane.startpoint).get_length() < critical_distance:
-                                if self.hpp4 is False:
-                                    self.diamond_plane.hitpoints -= 1
-                    elif "space_shuttle" in self.active_plane:
-                        if b.bossnumber != self.space_shuttle_plane.number:
-                            if (b.startpoint - self.space_shuttle_plane.startpoint).get_length() < critical_distance:
-                                if self.hpp5 is False:
-                                    self.space_shuttle_plane.hitpoints -= 1
-                    elif "dagger" in self.active_plane:
-                        if b.bossnumber != self.dagger_plane.number:
-                            if (b.startpoint - self.dagger_plane.startpoint).get_length() < critical_distance:
-                                if self.hpp6 is False:
-                                    self.dagger_plane.hitpoints -= 1
-                    elif "rocket" in self.active_plane:
-                        if b.bossnumber != self.rocket_plane.number:
-                            if (b.startpoint - self.rocket_plane.startpoint).get_length() < critical_distance:
-                                if self.hpp7 is False:
-                                    self.rocket_plane.hitpoints -= 1
-                                    
+                    if b.bossnumber != self.player1.number:
+                        print("stufe 1")
+                        if (b.startpoint - self.player1.startpoint).get_length() < critical_distance:
+                            print("stufe 2")
+                            print("hp weniger")
+                            self.player1.hitpoints -= 1
+
                     # --- Player2 ---
                     
-                    if "standard" in self.active_plane2:
-                        if b.bossnumber != self.player2.number:
-                            if (b.startpoint - self.player2.startpoint).get_length() < critical_distance:
-                                if self.hpp2 is False:
-                                    self.player2.hitpoints -= 1
-                    elif "pacman" in self.active_plane2:
-                        if b.bossnumber != self.pacman_plane.number:
-                            if (b.startpoint - self.pacman_plane.startpoint).get_length() < critical_distance:
-                                if self.hpp8 is False:
-                                    self.pacman_plane.hitpoints -= 1
-                    elif "arrow" in self.active_plane2:
-                        if b.bossnumber != self.arrow_plane.number:
-                            if (b.startpoint - self.arrow_plane.startpoint).get_length() < critical_distance:
-                                if self.hpp9 is False:
-                                    self.arrow_plane.hitpoints -= 1
+                    if b.bossnumber != self.player2.number:
+                        if (b.startpoint - self.player2.startpoint).get_length() < critical_distance:
+                            self.player2.hitpoints -= 1
             
             # -------- draw cannons -----------
             
             # --- Player1 ---
-            
-            if "standard" in self.active_plane:
-                if "standard" in self.active_plane2:
-                    d =  self.player2.startpoint - self.player1.startpoint 
-                    d = d.normalized()
-                    d *= 35
-                    pygame.draw.line(self.screen, (0,0,0), (self.player1.startpoint.x,
-                                                            self.player1.startpoint.y),
-                                                            (self.player1.startpoint.x + d.x,
-                                                            self.player1.startpoint.y + d.y),
-                                                            8)
-                elif "pacman" in self.active_plane2:         
-                    d =  self.pacman_plane.startpoint - self.player1.startpoint 
-                    d = d.normalized()
-                    d *= 35
-                    pygame.draw.line(self.screen, (0,0,0), (self.player1.startpoint.x,
-                                                            self.player1.startpoint.y),
-                                                            (self.player1.startpoint.x + d.x,
-                                                            self.player1.startpoint.y + d.y),
-                                                            8)
-                elif "arrow" in self.active_plane2:         
-                    d =  self.arrow_plane.startpoint - self.player1.startpoint 
-                    d = d.normalized()
-                    d *= 35
-                    pygame.draw.line(self.screen, (0,0,0), (self.player1.startpoint.x,
-                                                            self.player1.startpoint.y),
-                                                            (self.player1.startpoint.x + d.x,
-                                                            self.player1.startpoint.y + d.y),
-                                                            8)
-                 
-            elif "rectangle" in self.active_plane:           
-                if "standard" in self.active_plane2: 
-                    d =  self.player2.startpoint - self.rectangle_plane.startpoint 
-                    d = d.normalized()
-                    d *= 35
-                    pygame.draw.line(self.screen, (0,0,0), (self.rectangle_plane.startpoint.x,
-                                                            self.rectangle_plane.startpoint.y),
-                                                            (self.rectangle_plane.startpoint.x + d.x,
-                                                            self.rectangle_plane.startpoint.y + d.y),
-                                                            8)
-                
-                elif "pacman" in self.active_plane2:
-                    d =  self.pacman_plane.startpoint - self.rectangle_plane.startpoint 
-                    d = d.normalized()
-                    d *= 35
-                    pygame.draw.line(self.screen, (0,0,0), (self.rectangle_plane.startpoint.x,
-                                                            self.rectangle_plane.startpoint.y),
-                                                            (self.rectangle_plane.startpoint.x + d.x,
-                                                            self.rectangle_plane.startpoint.y + d.y),
-                                                            8)
-                elif "arrow" in self.active_plane2:
-                    d =  self.arrow_plane.startpoint - self.rectangle_plane.startpoint 
-                    d = d.normalized()
-                    d *= 35
-                    pygame.draw.line(self.screen, (0,0,0), (self.rectangle_plane.startpoint.x,
-                                                            self.rectangle_plane.startpoint.y),
-                                                            (self.rectangle_plane.startpoint.x + d.x,
-                                                            self.rectangle_plane.startpoint.y + d.y),
-                                                            8)
-            
-            elif "diamond" in self.active_plane:      
-                if "standard" in self.active_plane2:      
-                    d =  self.player2.startpoint - self.diamond_plane.startpoint 
-                    d = d.normalized()
-                    d *= 35
-                    pygame.draw.line(self.screen, (0,0,0), (self.diamond_plane.startpoint.x,
-                                                            self.diamond_plane.startpoint.y),
-                                                            (self.diamond_plane.startpoint.x + d.x,
-                                                            self.diamond_plane.startpoint.y + d.y),
-                                                            8)
-                elif "pacman" in self.active_plane2:
-                    d =  self.pacman_plane.startpoint - self.diamond_plane.startpoint 
-                    d = d.normalized()
-                    d *= 35
-                    pygame.draw.line(self.screen, (0,0,0), (self.diamond_plane.startpoint.x,
-                                                            self.diamond_plane.startpoint.y),
-                                                            (self.diamond_plane.startpoint.x + d.x,
-                                                            self.diamond_plane.startpoint.y + d.y),
-                                                            8)
-                elif "arrow" in self.active_plane2:
-                    d =  self.arrow_plane.startpoint - self.diamond_plane.startpoint 
-                    d = d.normalized()
-                    d *= 35
-                    pygame.draw.line(self.screen, (0,0,0), (self.diamond_plane.startpoint.x,
-                                                            self.diamond_plane.startpoint.y),
-                                                            (self.diamond_plane.startpoint.x + d.x,
-                                                            self.diamond_plane.startpoint.y + d.y),
-                                                            8)
-         
-            elif "space_shuttle" in self.active_plane:
-                if "standard" in self.active_plane2:            
-                    d =  self.player2.startpoint - self.space_shuttle_plane.startpoint 
-                    d = d.normalized()
-                    d *= 35
-                    pygame.draw.line(self.screen, (0,0,0), (self.space_shuttle_plane.startpoint.x,
-                                                            self.space_shuttle_plane.startpoint.y),
-                                                            (self.space_shuttle_plane.startpoint.x + d.x,
-                                                            self.space_shuttle_plane.startpoint.y + d.y),
-                                                            8)
-                elif "pacman" in self.active_plane2:
-                    d =  self.pacman_plane.startpoint - self.space_shuttle_plane.startpoint 
-                    d = d.normalized()
-                    d *= 35
-                    pygame.draw.line(self.screen, (0,0,0), (self.space_shuttle_plane.startpoint.x,
-                                                            self.space_shuttle_plane.startpoint.y),
-                                                            (self.space_shuttle_plane.startpoint.x + d.x,
-                                                            self.space_shuttle_plane.startpoint.y + d.y),
-                                                            8)
-                elif "arrow" in self.active_plane2:
-                    d =  self.arrow_plane.startpoint - self.space_shuttle_plane.startpoint 
-                    d = d.normalized()
-                    d *= 35
-                    pygame.draw.line(self.screen, (0,0,0), (self.space_shuttle_plane.startpoint.x,
-                                                            self.space_shuttle_plane.startpoint.y),
-                                                            (self.space_shuttle_plane.startpoint.x + d.x,
-                                                            self.space_shuttle_plane.startpoint.y + d.y),
-                                                            8)
-     
-            elif "dagger" in self.active_plane:    
-                if "standard" in self.active_plane2:
-                    d =  self.player2.startpoint - self.dagger_plane.startpoint 
-                    d = d.normalized()
-                    d *= 35
-                    pygame.draw.line(self.screen, (0,0,0), (self.dagger_plane.startpoint.x,
-                                                            self.dagger_plane.startpoint.y),
-                                                            (self.dagger_plane.startpoint.x + d.x,
-                                                            self.dagger_plane.startpoint.y + d.y),
-                                                            8)
-                elif "pacman" in self.active_plane2:
-                    d =  self.pacman_plane.startpoint - self.dagger_plane.startpoint 
-                    d = d.normalized()
-                    d *= 35
-                    pygame.draw.line(self.screen, (0,0,0), (self.dagger_plane.startpoint.x,
-                                                            self.dagger_plane.startpoint.y),
-                                                            (self.dagger_plane.startpoint.x + d.x,
-                                                            self.dagger_plane.startpoint.y + d.y),
-                                                            8)
-                elif "arrow" in self.active_plane2:
-                    d =  self.arrow_plane.startpoint - self.dagger_plane.startpoint 
-                    d = d.normalized()
-                    d *= 35
-                    pygame.draw.line(self.screen, (0,0,0), (self.dagger_plane.startpoint.x,
-                                                            self.dagger_plane.startpoint.y),
-                                                            (self.dagger_plane.startpoint.x + d.x,
-                                                            self.dagger_plane.startpoint.y + d.y),
-                                                            8)
 
-            elif "rocket" in self.active_plane:         
-                if "standard" in self.active_plane2:   
-                    d =  self.player2.startpoint - self.rocket_plane.startpoint 
-                    d = d.normalized()
-                    d *= 35
-                    pygame.draw.line(self.screen, (0,0,0), (self.rocket_plane.startpoint.x,
-                                                            self.rocket_plane.startpoint.y),
-                                                            (self.rocket_plane.startpoint.x + d.x,
-                                                            self.rocket_plane.startpoint.y + d.y),
-                                                            8)
-                elif "pacman" in self.active_plane2:
-                    d =  self.pacman_plane.startpoint - self.rocket_plane.startpoint 
-                    d = d.normalized()
-                    d *= 35
-                    pygame.draw.line(self.screen, (0,0,0), (self.rocket_plane.startpoint.x,
-                                                            self.rocket_plane.startpoint.y),
-                                                            (self.rocket_plane.startpoint.x + d.x,
-                                                            self.rocket_plane.startpoint.y + d.y),
-                                                            8)
-                elif "arrow" in self.active_plane2:
-                    d =  self.arrow_plane.startpoint - self.rocket_plane.startpoint 
-                    d = d.normalized()
-                    d *= 35
-                    pygame.draw.line(self.screen, (0,0,0), (self.rocket_plane.startpoint.x,
-                                                            self.rocket_plane.startpoint.y),
-                                                            (self.rocket_plane.startpoint.x + d.x,
-                                                            self.rocket_plane.startpoint.y + d.y),
-                                                            8)
-            
+            d =  self.player2.startpoint - self.player1.startpoint 
+            d = d.normalized()
+            d *= 35
+            pygame.draw.line(self.screen, (0,0,0), (self.player1.startpoint.x,
+                                                    self.player1.startpoint.y),
+                                                    (self.player1.startpoint.x + d.x,
+                                                    self.player1.startpoint.y + d.y),
+                                                    8)
             # --- Player2 ---
             
-            if "standard" in self.active_plane2:
-                if "standard" in self.active_plane:
-                    c =  self.player1.startpoint - self.player2.startpoint 
-                    c = c.normalized()
-                    c *= 35
-                    pygame.draw.line(self.screen, (0,0,0), (self.player2.startpoint.x,
-                                                            self.player2.startpoint.y),
-                                                            (self.player2.startpoint.x + c.x,
-                                                            self.player2.startpoint.y + c.y),
-                                                            8)
-                elif "rectangle" in self.active_plane:  
-                    c =  self.rectangle_plane.startpoint - self.player2.startpoint 
-                    c = c.normalized()
-                    c *= 35
-                    pygame.draw.line(self.screen, (0,0,0), (self.player2.startpoint.x,
-                                                            self.player2.startpoint.y),
-                                                            (self.player2.startpoint.x + c.x,
-                                                            self.player2.startpoint.y + c.y),
-                                                            8)
-                elif "diamond" in self.active_plane:
-                    c =  self.diamond_plane.startpoint - self.player2.startpoint 
-                    c = c.normalized()
-                    c *= 35
-                    pygame.draw.line(self.screen, (0,0,0), (self.player2.startpoint.x,
-                                                            self.player2.startpoint.y),
-                                                            (self.player2.startpoint.x + c.x,
-                                                            self.player2.startpoint.y + c.y),
-                                                            8)
-                elif "space_shuttle" in self.active_plane:
-                    c =  self.space_shuttle_plane.startpoint - self.player2.startpoint 
-                    c = c.normalized()
-                    c *= 35
-                    pygame.draw.line(self.screen, (0,0,0), (self.player2.startpoint.x,
-                                                            self.player2.startpoint.y),
-                                                            (self.player2.startpoint.x + c.x,
-                                                            self.player2.startpoint.y + c.y),
-                                                            8)
-                elif "dagger" in self.active_plane:
-                    c =  self.dagger_plane.startpoint - self.player2.startpoint 
-                    c = c.normalized()
-                    c *= 35
-                    pygame.draw.line(self.screen, (0,0,0), (self.player2.startpoint.x,
-                                                            self.player2.startpoint.y),
-                                                            (self.player2.startpoint.x + c.x,
-                                                            self.player2.startpoint.y + c.y),
-                                                            8)
-                elif "rocket" in self.active_plane:
-                    c =  self.rocket_plane.startpoint - self.player2.startpoint 
-                    c = c.normalized()
-                    c *= 35
-                    pygame.draw.line(self.screen, (0,0,0), (self.player2.startpoint.x,
-                                                            self.player2.startpoint.y),
-                                                            (self.player2.startpoint.x + c.x,
-                                                            self.player2.startpoint.y + c.y),
-                                                            8)
-            
-            if "pacman" in self.active_plane2:
-                if "standard" in self.active_plane:
-                    c =  self.player1.startpoint - self.pacman_plane.startpoint 
-                    c = c.normalized()
-                    c *= 35
-                    pygame.draw.line(self.screen, (0,0,0), (self.pacman_plane.startpoint.x,
-                                                            self.pacman_plane.startpoint.y),
-                                                            (self.pacman_plane.startpoint.x + c.x,
-                                                            self.pacman_plane.startpoint.y + c.y),
-                                                            8)
-                elif "rectangle" in self.active_plane:  
-                    c =  self.rectangle_plane.startpoint - self.pacman_plane.startpoint 
-                    c = c.normalized()
-                    c *= 35
-                    pygame.draw.line(self.screen, (0,0,0), (self.pacman_plane.startpoint.x,
-                                                            self.pacman_plane.startpoint.y),
-                                                            (self.pacman_plane.startpoint.x + c.x,
-                                                            self.pacman_plane.startpoint.y + c.y),
-                                                            8)
-                elif "diamond" in self.active_plane:
-                    c =  self.diamond_plane.startpoint - self.pacman_plane.startpoint 
-                    c = c.normalized()
-                    c *= 35
-                    pygame.draw.line(self.screen, (0,0,0), (self.pacman_plane.startpoint.x,
-                                                            self.pacman_plane.startpoint.y),
-                                                            (self.pacman_plane.startpoint.x + c.x,
-                                                            self.pacman_plane.startpoint.y + c.y),
-                                                            8)
-                elif "space_shuttle" in self.active_plane:
-                    c =  self.space_shuttle_plane.startpoint - self.pacman_plane.startpoint 
-                    c = c.normalized()
-                    c *= 35
-                    pygame.draw.line(self.screen, (0,0,0), (self.pacman_plane.startpoint.x,
-                                                            self.pacman_plane.startpoint.y),
-                                                            (self.pacman_plane.startpoint.x + c.x,
-                                                            self.pacman_plane.startpoint.y + c.y),
-                                                            8)
-                elif "dagger" in self.active_plane:
-                    c =  self.dagger_plane.startpoint - self.pacman_plane.startpoint 
-                    c = c.normalized()
-                    c *= 35
-                    pygame.draw.line(self.screen, (0,0,0), (self.pacman_plane.startpoint.x,
-                                                            self.pacman_plane.startpoint.y),
-                                                            (self.pacman_plane.startpoint.x + c.x,
-                                                            self.pacman_plane.startpoint.y + c.y),
-                                                            8)
-                elif "rocket" in self.active_plane:
-                    c =  self.rocket_plane.startpoint - self.pacman_plane.startpoint 
-                    c = c.normalized()
-                    c *= 35
-                    pygame.draw.line(self.screen, (0,0,0), (self.pacman_plane.startpoint.x,
-                                                            self.pacman_plane.startpoint.y),
-                                                            (self.pacman_plane.startpoint.x + c.x,
-                                                            self.pacman_plane.startpoint.y + c.y),
-                                                            8)
-                                                            
-            if "arrow" in self.active_plane2:
-                if "standard" in self.active_plane:
-                    c =  self.player1.startpoint - self.arrow_plane.startpoint 
-                    c = c.normalized()
-                    c *= 35
-                    pygame.draw.line(self.screen, (0,0,0), (self.arrow_plane.startpoint.x,
-                                                            self.arrow_plane.startpoint.y),
-                                                            (self.arrow_plane.startpoint.x + c.x,
-                                                            self.arrow_plane.startpoint.y + c.y),
-                                                            8)
-                elif "rectangle" in self.active_plane:  
-                    c =  self.rectangle_plane.startpoint - self.arrow_plane.startpoint 
-                    c = c.normalized()
-                    c *= 35
-                    pygame.draw.line(self.screen, (0,0,0), (self.arrow_plane.startpoint.x,
-                                                            self.arrow_plane.startpoint.y),
-                                                            (self.arrow_plane.startpoint.x + c.x,
-                                                            self.arrow_plane.startpoint.y + c.y),
-                                                            8)
-                elif "diamond" in self.active_plane:
-                    c =  self.diamond_plane.startpoint - self.arrow_plane.startpoint 
-                    c = c.normalized()
-                    c *= 35
-                    pygame.draw.line(self.screen, (0,0,0), (self.arrow_plane.startpoint.x,
-                                                            self.arrow_plane.startpoint.y),
-                                                            (self.arrow_plane.startpoint.x + c.x,
-                                                            self.arrow_plane.startpoint.y + c.y),
-                                                            8)
-                elif "space_shuttle" in self.active_plane:
-                    c =  self.space_shuttle_plane.startpoint - self.arrow_plane.startpoint 
-                    c = c.normalized()
-                    c *= 35
-                    pygame.draw.line(self.screen, (0,0,0), (self.arrow_plane.startpoint.x,
-                                                            self.arrow_plane.startpoint.y),
-                                                            (self.arrow_plane.startpoint.x + c.x,
-                                                            self.arrow_plane.startpoint.y + c.y),
-                                                            8)
-                elif "dagger" in self.active_plane:
-                    c =  self.dagger_plane.startpoint - self.arrow_plane.startpoint 
-                    c = c.normalized()
-                    c *= 35
-                    pygame.draw.line(self.screen, (0,0,0), (self.arrow_plane.startpoint.x,
-                                                            self.arrow_plane.startpoint.y),
-                                                            (self.arrow_plane.startpoint.x + c.x,
-                                                            self.arrow_plane.startpoint.y + c.y),
-                                                            8)
-                elif "rocket" in self.active_plane:
-                    c =  self.rocket_plane.startpoint - self.arrow_plane.startpoint 
-                    c = c.normalized()
-                    c *= 35
-                    pygame.draw.line(self.screen, (0,0,0), (self.arrow_plane.startpoint.x,
-                                                            self.arrow_plane.startpoint.y),
-                                                            (self.arrow_plane.startpoint.x + c.x,
-                                                            self.arrow_plane.startpoint.y + c.y),
-                                                            8)
-            
+            c =  self.player1.startpoint - self.player2.startpoint 
+            c = c.normalized()
+            c *= 35
+            pygame.draw.line(self.screen, (0,0,0), (self.player2.startpoint.x,
+                                                    self.player2.startpoint.y),
+                                                    (self.player2.startpoint.x + c.x,
+                                                    self.player2.startpoint.y + c.y),
+                                                    8)
                                                             
             # --------- (auto)fire -------
             #c *= 0.05
             #d *= 0.05
             speedfactor = 0.05
             if pressed[pygame.K_LCTRL]:
-                if "standard" in self.active_plane:
-                    if "green" in self.active_colour:
-                        move = c * -speedfactor # + self.player1.move
-                        Ball(self.screen, self.player1.startpoint-c, move, color=self.green, bossnumber=self.player1.number)
-                    if "yellow" in self.active_colour:
-                        move = c * -speedfactor # + self.player1.move
-                        Ball(self.screen, self.player1.startpoint-c, move, color=self.yellow, bossnumber=self.player1.number)
-                    if "red" in self.active_colour:
-                        move = c * -speedfactor # + self.player1.move
-                        Ball(self.screen, self.player1.startpoint-c, move, color=self.red, bossnumber=self.player1.number)
-                elif "rectangle" in self.active_plane:
-                    if "green" in self.active_colour:
-                        move = c * -speedfactor # + self.player1.move
-                        Ball(self.screen, self.rectangle_plane.startpoint-c, move, color=self.green, bossnumber=self.rectangle_plane.number)                      
-                    if "yellow" in self.active_colour:
-                        move = c * -speedfactor # + self.player1.move
-                        Ball(self.screen, self.rectangle_plane.startpoint-c, move, color=self.yellow, bossnumber=self.rectangle_plane.number)                      
-                    if "red" in self.active_colour:    
-                        move = c * -speedfactor # + self.p
-                        move = c * -speedfactor # + self.player1.move
-                        Ball(self.screen, self.diamond_plane.startpoint-c, move, color=self.green, bossnumber=self.diamond_plane.number)                      
-                    if "yellow" in self.active_colour:
-                        move = c * -speedfactor # + self.player1.move
-                        Ball(self.screen, self.diamond_plane.startpoint-c, move, color=self.yellow, bossnumber=self.diamond_plane.number)                      
-                    if "red" in self.active_colour:
-                        move = c * -speedfactor # + self.player1.move
-                        Ball(self.screen, self.diamond_plane.startpoint-c, move, color=self.red, bossnumber=self.diamond_plane.number)                      
-                elif "space_shuttle" in self.active_plane:
-                    if "green" in self.active_colour:
-                        move = c * -speedfactor # + self.player1.move
-                        Ball(self.screen, self.space_shuttle_plane.startpoint-c, move, color=self.green, bossnumber=self.space_shuttle_plane.number)                      
-                    if "yellow" in self.active_colour:
-                        move = c * -speedfactor # + self.player1.move
-                        Ball(self.screen, self.space_shuttle_plane.startpoint-c, move, color=self.yellow, bossnumber=self.space_shuttle_plane.number)                      
-                    if "red" in self.active_colour:
-                        move = c * -speedfactor # + self.player1.move
-                        Ball(self.screen, self.space_shuttle_plane.startpoint-c, move, color=self.red, bossnumber=self.space_shuttle_plane.number)                      
-                elif "dagger" in self.active_plane:
-                    if "green" in self.active_colour:
-                        move = c * -speedfactor # + self.player1.move
-                        Ball(self.screen, self.rocket_plane.startpoint-c, move, color=self.green, bossnumber=self.rocket_plane.number)                      
-                    if "yellow" in self.active_colour:
-                        move = c * -speedfactor # + self.player1.move
-                        Ball(self.screen, self.rocket_plane.startpoint-c, move, color=self.yellow, bossnumber=self.rocket_plane.number)                      
-                    if "red" in self.active_colour:
-                        move = c * -speedfactor # + self.player1.move
-                        Ball(self.screen, self.rocket_plane.startpoint-c, move, color=self.red, bossnumber=self.rocket_plane.number)                      
-                elif "diamond" in self.active_plane:
-                    if "green" in self.active_colour:
-                        move = c * -speedfactor # + self.player1.move
-                        Ball(self.screen, self.diamond_plane.startpoint-c, move, color=self.green, bossnumber=self.diamond_plane.number)                      
-                    if "yellow" in self.active_colour:
-                        move = c * -speedfactor # + self.player1.move
-                        Ball(self.screen, self.diamond_plane.startpoint-c, move, color=self.yellow, bossnumber=self.diamond_plane.number)                      
-                    if "red" in self.active_colour:
-                        move = c * -speedfactor # + self.player1.move
-                        Ball(self.screen, self.diamond_plane.startpoint-c, move, color=self.red, bossnumber=self.diamond_plane.number)                      
-                elif "space_shuttle" in self.active_plane:
-                    if "green" in self.active_colour:
-                        move = c * -speedfactor # + self.player1.move
-                        Ball(self.screen, self.space_shuttle_plane.startpoint-c, move, color=self.green, bossnumber=self.space_shuttle_plane.number)                      
-                    if "yellow" in self.active_colour:
-                        move = c * -speedfactor # + self.player1.move
-                        Ball(self.screen, self.space_shuttle_plane.startpoint-c, move, color=self.yellow, bossnumber=self.space_shuttle_plane.number)                      
-                    if "red" in self.active_colour:
-                        move = c * -speedfactor # + self.player1.move
-                        Ball(self.screen, self.space_shuttle_plane.startpoint-c, move, color=self.red, bossnumber=self.space_shuttle_plane.number)                      
-                elif "dagger" in self.active_plane:
-                    if "green" in self.active_colour:
-                        move = c * -speedfactor # + self.player1.move
-                        Ball(self.screen, self.rocket_plane.startpoint-c, move, color=self.green, bossnumber=self.rocket_plane.number)                      
-                    if "yellow" in self.active_colour:
-                        move = c * -speedfactor # + self.player1.move
-                        Ball(self.screen, self.rocket_plane.startpoint-c, move, color=self.yellow, bossnumber=self.rocket_plane.number)                      
-                    if "red" in self.active_colour:
-                        move = c * -speedfactor # + self.player1.move
-                        Ball(self.screen, self.rocket_plane.startpoint-c, move, color=self.red, bossnumber=self.rocket_plane.number)                                       
-
-
-
-            
-            if pressed[pygame.K_RCTRL]:  
-                if "standard" in self.active_plane2:  
+                if "green" in self.active_colour:
+                    move = c * -speedfactor # + self.player1.move
+                    Line(self.screen, self.player1.startpoint-c, move, color=self.green, bossnumber=self.player1.number)
+                if "yellow" in self.active_colour:
+                    move = c * -speedfactor # + self.player1.move
+                    Line(self.screen, self.player1.startpoint-c, move, color=self.yellow, bossnumber=self.player1.number)
+                if "red" in self.active_colour:
+                    move = c * -speedfactor # + self.player1.move
+                    Line(self.screen, self.player1.startpoint-c, move, color=self.red, bossnumber=self.player1.number)
+                if pressed[pygame.K_RCTRL]:  
                     if "purple" in self.active_colour2:                                           
                         move = d * -speedfactor 
-                        Ball(self.screen, self.player2.startpoint-d,  move, color=self.purple, bossnumber=self.player2.number)  
+                        Line(self.screen, self.player2.startpoint-d,  move, color=self.purple, bossnumber=self.player2.number)  
                     elif "light_blue" in self.active_colour2:
                         move = d * -speedfactor 
-                        Ball(self.screen, self.player2.startpoint-d,  move, color=self.light_blue, bossnumber=self.player2.number)  
+                        Line(self.screen, self.player2.startpoint-d,  move, color=self.light_blue, bossnumber=self.player2.number)  
                     elif "blue" in self.active_colour2:
                         move = d * -speedfactor 
-                        Ball(self.screen, self.player2.startpoint-d,  move, color=self.blue, bossnumber=self.player2.number)  
-                elif "pacman" in self.active_plane2:
-                    if "purple" in self.active_colour2:
-                        move = d * -speedfactor 
-                        Ball(self.screen, self.pacman_plane.startpoint-d,  move, color=self.purple, bossnumber=self.pacman_plane.number)   
-                    elif "light_blue" in self.active_colour2:
-                        move = d * -speedfactor 
-                        Ball(self.screen, self.pacman_plane.startpoint-d,  move, color=self.light_blue, bossnumber=self.pacman_plane.number)
-                    elif "blue" in self.active_colour2:
-                        move = d * -speedfactor 
-                        Ball(self.screen, self.pacman_plane.startpoint-d,  move, color=self.blue, bossnumber=self.pacman_plane.number)
-                elif "arrow" in self.active_plane2:
-                    if "purple" in self.active_colour2:
-                        move = d * -speedfactor 
-                        Ball(self.screen, self.arrow_plane.startpoint-d,  move, color=self.purple, bossnumber=self.arrow_plane.number)   
-                    elif "light_blue" in self.active_colour2:
-                        move = d * -speedfactor 
-                        Ball(self.screen, self.arrow_plane.startpoint-d,  move, color=self.light_blue, bossnumber=self.arrow_plane.number)
-                    elif "blue" in self.active_colour2:
-                        move = d * -speedfactor 
-                        Ball(self.screen, self.arrow_plane.startpoint-d,  move, color=self.blue, bossnumber=self.arrow_plane.number)
-            
+                        Line(self.screen, self.player2.startpoint-d,  move, color=self.blue, bossnumber=self.player2.number)
+
+            if pressed[pygame.K_RCTRL]:  
+                if "purple" in self.active_colour2:                                           
+                    move = d * -speedfactor 
+                    Line(self.screen, self.player2.startpoint-d,  move, color=self.purple, bossnumber=self.player2.number)  
+                elif "light_blue" in self.active_colour2:
+                    move = d * -speedfactor 
+                    Line(self.screen, self.player2.startpoint-d,  move, color=self.light_blue, bossnumber=self.player2.number)  
+                elif "blue" in self.active_colour2:
+                    move = d * -speedfactor 
+                    Line(self.screen, self.player2.startpoint-d,  move, color=self.blue, bossnumber=self.player2.number)  
+                if pressed[pygame.K_LCTRL]:
+                    if "green" in self.active_colour:
+                        move = c * -speedfactor # + self.player1.move
+                        Line(self.screen, self.player1.startpoint-c, move, color=self.green, bossnumber=self.player1.number)
+                    if "yellow" in self.active_colour:
+                        move = c * -speedfactor # + self.player1.move
+                        Line(self.screen, self.player1.startpoint-c, move, color=self.yellow, bossnumber=self.player1.number)
+                    if "red" in self.active_colour:
+                        move = c * -speedfactor # + self.player1.move
+                        Line(self.screen, self.player1.startpoint-c, move, color=self.red, bossnumber=self.player1.number)
+                           
             # ---------- update screen ----------- 
             pygame.display.flip()
             self.screen.blit(self.background, (0, 0))
             
         pygame.quit()
-
-
-    def draw_text(self, text, x=50, y=150, color=(0,0,0), size = 24):
-        self.font = pygame.font.SysFont('mono', size, bold=True)
-        fw, fh = self.font.size(text)
-        surface = self.font.render(text, True, color)
-        self.screen.blit(surface, (x,y))
+        
+    def write(self, text, x=50, y=150, color=(0,0,0), size=None, center=False):
+        """write text on pygame surface. """
+        if size is None:
+            size = 24
+        font = pygame.font.SysFont('mono', size, bold=True)
+        fw, fh = font.size(text)
+        surface = font.render(text, True, color)
+        if center: # center text around x,y
+            self.screen.blit(surface, (x-fw//2, y-fh//2))
+        else:      # topleft corner is x,y
+            self.screen.blit(surface, (x,y))
 
 if __name__ == '__main__':
     PygView().run()
